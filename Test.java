@@ -1,69 +1,44 @@
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-public class PersonReader {
-
+public class PersonGenerator {
     public static void main(String[] args) {
-
         ArrayList<String> personList = new ArrayList<>();
         Scanner in = new Scanner(System.in);
         Scanner stringScanner = new Scanner(System.in);
 
-        System.out.println("Enter your first Name: ");
-        String Name = stringScanner.next();
+        collectPersonData(in, stringScanner, personList);
 
-        System.out.println("Enter your last name: ");
-        String name = stringScanner.next();
+        // Save person data to CSV file
+        saveToCSV(personList, "PersonTestData.txt");
 
-        System.out.println("What is your ID? ");
-        String ID = stringScanner.next();
+        in.close();
+        stringScanner.close();
+    }
 
-        System.out.println("Do you have a title? ");
-        String title = stringScanner.next();
+    private static void collectPersonData(Scanner in, Scanner stringScanner, ArrayList<String> personList) {
+        boolean input;
 
-        System.out.println("Enter your YOB: ");
-        while (!in.hasNextInt()) {
-            System.out.println("Please enter a valid birth year");
-            in.next();
-        }
-        int YOB = in.nextInt();
+        do {
+            String ID = SafeInput.getNonZeroLenString(in, "What is your ID?");
+            String firstName = SafeInput.getNonZeroLenString(in, "What is your first name?");
+            String lastName = SafeInput.getNonZeroLenString(in, "What is your last name?");
+            String title = SafeInput.getNonZeroLenString(in, "What is your title?");
 
-        String personInfo = String.format("| %-15s | %-15s | %-10s | %-15s | %-4d |", Name, name, ID, title, YOB);
-        personList.add(personInfo);
+            int YOB = SafeInput.getRangedInt(in, "Enter your YOB", 1000, 2024);
 
-        System.out.println("Do you have another person to input (Y/N): ");
-        String input = stringScanner.next();
-        String Y = "Y";
-        String N = "N";
-
-        while (input.equals(Y)) {
-            System.out.println("Enter your first Name: ");
-            Name = stringScanner.next();
-
-            System.out.println("Enter your last name: ");
-            name = stringScanner.next();
-
-            System.out.println("What is your ID? ");
-            ID = stringScanner.next();
-
-            System.out.println("Do you have a title? ");
-            title = stringScanner.next();
-
-            System.out.println("Enter your YOB: ");
-            while (!in.hasNextInt()) {
-                System.out.println("Please enter a valid birth year");
-                in.next();
-            }
-            YOB = in.nextInt();
-
-            personInfo = String.format("| %-15s | %-15s | %-10s | %-15s | %-4d |", Name, name, ID, title, YOB);
+           String personInfo = String.format("| %-15s | %-15s | %-10s | %-15s | %-4d |", ID, firstName, lastName, title, YOB);
             personList.add(personInfo);
+            System.out.println(personInfo);
 
-            System.out.println("Do you have another person to input (Y/N): ");
-            input = stringScanner.next();
+            input = SafeInput.getYNConfirm(stringScanner, "Do you have another person to input?");
         }
 
-        if (input.equals(N)) {
+        while (input);
+
+        if (!input) {
             System.out.println("Information for all persons: ");
             printTableHeader();
             for (String info : personList) {
@@ -71,9 +46,17 @@ public class PersonReader {
             }
             printTableFooter();
         }
+    }
 
-        in.close();
-        stringScanner.close();
+    private static void saveToCSV(ArrayList<String> personList, String fileName) {
+        try (FileWriter writer = new FileWriter("PersonTestData.txt")) {
+            for (String personInfo : personList) {
+                writer.write(personInfo + "\n");
+            }
+            System.out.println("Person data saved to " + fileName);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private static void printTableHeader() {
@@ -85,5 +68,4 @@ public class PersonReader {
     private static void printTableFooter() {
         System.out.println("+-----------------+-----------------+------------+-----------------+------+");
     }
-
-
+}
